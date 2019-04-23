@@ -1,0 +1,270 @@
+<html>
+<!-- Adding a data chart using Chart.js -->
+<head>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
+    <style>
+        #htmltable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+            #htmltable td, #htmltable th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            #htmltable tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
+
+            #htmltable tr:hover {
+                background-color: #ddd;
+            }
+
+            #htmltable th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #4CAF50;
+                color: white;
+            }
+
+        tbody {
+            box-sizing: border-box;
+            display: block;
+            overflow: auto;
+            max-height: 30vh;
+            height: 30%;
+            overflow-y: auto;
+            width: 100%;
+        }
+        /*#htmldiv{
+            overflow: auto;
+          max-height: 40vh;
+
+        }
+        */
+
+    </style>
+</head>
+<body onload="javascript:init()">
+    <!-- Adding a slider for controlling data rate -->
+    <div>
+        <input type="range" min="1" max="10" value="5" id="dataRateSlider" oninput="sendDataRate()" />
+        <label for="dataRateSlider" id="dataRateLabel">Rate: 0.2Hz</label>
+    </div>
+    <hr />
+    <div>
+        <canvas id="line-chart" width="800" height="450"></canvas>
+    </div>
+    <div id="svgdiv">
+        <svg id="svggraph">
+
+        </svg>
+    </div>
+    <div id="settings">
+        <div id="inasettings">
+            <form>
+                <select name="INA219" id="range">
+                    <option value="0">16V</option>
+                    <option value="1">32V </option>
+                </select>
+
+                <select name="INA219" id="gain">
+                    <option value="0">40MV</option>
+                    <option value="1">80MV </option>
+                    <option value="2">160MV</option>
+                    <option value="3">320MV </option>
+                </select>
+
+                <select name="INA219" id="adc">
+                    <option value="0">9 Bit</option>
+                    <option value="1">10 Bit </option>
+                    <option value="2">11 Bit</option>
+                    <option value="3">12 Bit </option>
+                </select>
+                <select name="INA219" id="samples">
+                    <option value="9">2 Sample </option>
+                    <option value="10">4 Sample</option>
+                    <option value="11">8 Sample </option>
+                    <option value="12">16 Sample</option>
+                    <option value="13">32 Sample </option>
+                    <option value="14">64 Sample </option>
+                    <option value="15">128 Sample </option>
+                </select>
+
+                <select name="INA219" id="pga">
+                    <option value="0">40MV</option>
+                    <option value="1">80MV </option>
+                    <option value="2">160MV</option>
+                    <option value="3">320MV </option>
+                </select>
+                <input type="button" value="Set INA219" onclick="sendinasettings()">
+                <select name="INA219" id="typebinary">
+                    <option value="0">Binary</option>
+                    <option value="1">Text </option>
+                    <option value="2">Object</option>
+                    <option value="3">String </option>
+                    <option value="4">Stringify binary</option>
+                    <option value="5">Stringify </option>
+
+                </select>
+
+
+            </form>
+            <textarea id="status">Status</textarea>
+        </div>
+        <div id="shuntsettings">
+            Resistance:<input type="text" value=".0021" id="shuntresistance"> Ohms
+            SHUNT_MAX_V, BUS_MAX_V, MAX_CURRENT);
+        </div>
+    </div>
+    <div id="htmldiv">
+        <table id="htmltable">
+            <caption>Values</caption>
+        </table>
+    </div>
+
+    <!-- Adding a websocket to the client (webpage) -->
+    <script>
+        var webSocket, dataPlot; msg = "";
+        var initial = 0;
+        var maxDataPoints = 20; var eventdata;
+        var blob, jsonTXT = { "Vshunt": 0, "I": 0, "Vbus": 0, "P": 0 };
+        function removeData() {
+            dataPlot.data.labels.shift();
+            dataPlot.data.datasets[0].data.shift();
+        }
+        function addData(label, data) {
+            if (dataPlot.data.labels.length > maxDataPoints) removeData();
+            dataPlot.data.labels.push(label);
+            dataPlot.data.datasets[0].data.push(data);
+            dataPlot.update();
+        }
+        function init() {
+            webSocket = new WebSocket('ws://' + window.location.hostname + ':80/ws');
+            //            webSocket.binaryType = 'arraybuffer';
+
+            dataPlot = new Chart(document.getElementById("line-chart"), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        label: "Current (A)",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }]
+                }
+            });
+            webSocket.onmessage = function (event) {
+                //      console.log(event.data);
+                if (event.data instanceof ArrayBuffer) {
+                    msg = "BIN:";
+                    var bytes = new Uint8Array(event.data);
+                    for (var i = 0; i < bytes.length; i++) {
+                        msg += String.fromCharCode(bytes[i]);
+                    }
+                } else {
+                    msg = "TXT:" + event.data;
+                    blob = event.data;
+                    var arrayBuffer;
+                    var fileReader = new FileReader();
+                    fileReader.onload = function (event) {
+                        //              arrayBuffer = event.target.result;
+                        jsonTXT = JSON.parse(event.target.result);
+                        console.log(event.target.result)
+                    };
+                    if (blob instanceof Blob)
+                        fileReader.readAsText(event.data);
+                    else if (blob instanceof ArrayBuffer) {
+                        console.log(event.data);
+                        eventdata = event.data;
+                        jsonTXT = JSON.stringify(event.data);
+                        console.log(jsonTXT);
+                    }
+                    else {
+                        console.log("something else");
+                        eventdata = event.data;
+                        document.getElementById("status").value = eventdata;
+                    }
+                    var today = new Date();
+                    var t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    addData(t, jsonTXT.I);
+                    table1 = document.getElementById("htmltable");
+                    if (initial == 0) {
+                        row1 = table1.insertRow(); var tablemsg = "<th>S.No.</th>";
+                        for (i in jsonTXT) {
+                            tablemsg += "<th>";
+
+
+                            tablemsg += i + "</th>";
+
+                        }
+                        row1.innerHTML = tablemsg;
+
+
+                    }
+                    else {
+
+                        tablemsg = ""; tablemsg = initial;
+                        for (i in Object.values(jsonTXT)) {
+                            tablemsg += "<td>";
+
+
+                            tablemsg += Object.values(jsonTXT)[i] + "</td>";
+
+                        }
+
+
+                        row1 = table1.insertRow(1);
+                        row1.innerHTML = tablemsg;
+                        //                        row1.innerHTML = "<td>" + jsonTXT.I + "</td><td>" + jsonTXT.Vbus + "</td><td>" + jsonTXT.P + "</td>"
+                    }
+                    initial++;
+
+
+                }
+
+            }
+        }
+        function sendDataRate() {
+            var dataRate = document.getElementById("dataRateSlider").value;
+            webSocket.send(dataRate);
+            dataRate = 1.0 / dataRate;
+            document.getElementById("dataRateLabel").innerHTML = "Rate: " + dataRate.toFixed(2) + "Hz";
+        }
+        function sendinasettings() {
+            jsonCMD = '{"type":"command","name":"inasettings","range":';
+            jsonCMD += document.getElementById("range").value;
+            jsonCMD += ',"gain":';
+            jsonCMD += document.getElementById("gain").value;
+            jsonCMD += ',"samples":';
+            jsonCMD += document.getElementById("samples").value;
+            jsonCMD += ',"pga":';
+            jsonCMD += document.getElementById("pga").value;
+            jsonCMD += ',"resistance":'
+            jsonCMD += document.getElementById("shuntresistance").value;
+
+            jsonCMD += '}';
+            console.log(`command=${jsonCMD}`)
+            webSocket.send(jsonCMD);
+            switch (document.getElementById("typebinary").value) {
+                case 0: webSocket.send(JSON.parse(jsonCMD), { binary: true }); break;
+                case 1: webSocket.send(JSON.parse(jsonCMD), { binary: false }); break;
+                case 2: webSocket.send(jsonCMD, { binary: true }); break;
+                case 3: webSocket.send(jsonCMD, { binary: false }); break;
+                case 4: webSocket.send(jsonCMD, { binary: true }); break;
+                case 5: webSocket.send(jsonCMD); break;
+
+                default:
+                    webSocket.send(JSON.parse(jsonCMD), { binary: true });
+
+            }
+            console.log(`Websocket send:${document.getElementById("typebinary").value}`)
+
+        }
+    </script>
+</body>
+</html>
