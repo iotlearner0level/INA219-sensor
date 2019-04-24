@@ -4,6 +4,7 @@ INA219 Using external shunt resistance and display readings on the web
 ## Starting the program
 Download the code, copile and run. 
 - Using this tool, https://github.com/esp8266/arduino-esp8266fs-plugin upload the data files to esp flash memory.
+- Add <username> and <password> to credentials.h
 - run the http://ina219-webserver.local/ina219.html for viewing sensor data
 - INA219 needs to be connected to D1 (SCL) and D2 (SDA) of the wemos d1 mini
 - Pull-up registers are required.
@@ -13,6 +14,12 @@ Download the code, copile and run.
 * Speed of sending data may be varied
 * Incoming data is plotted on a graph
 * Data is also displayed on an html table on the fly
+## Debugging
+
+* Most of the web browsers already have necessary tools required which can be accessed via Right Click>Inspect menu or F9
+* FSBrowser example includes embedded editor in the ESP Webserver itself. To access, goto http://ina219-webserver.local/edit
+* Edit the html/java script in the browser or the esp editor. Modifications can also be done inside the browser itself, in the Console.
+* Editing arduino requires more effort, as the code needs to be compiled
 
 ## Description
 
