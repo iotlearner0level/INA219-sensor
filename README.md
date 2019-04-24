@@ -1,8 +1,9 @@
 # INA219-sensor
 INA219 Using external shunt resistance and display readings on the web
 
-## Starting the code
+## Starting the program
 Download the code, copile and run. 
+- Using this tool, https://github.com/esp8266/arduino-esp8266fs-plugin upload the data files to esp flash memory.
 - run the http://ina219-webserver.local/ina219.html for viewing sensor data
 - INA219 needs to be connected to D1 (SCL) and D2 (SDA) of the wemos d1 mini
 - Pull-up registers are required.
