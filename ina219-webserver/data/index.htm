@@ -1,76 +1,99 @@
-﻿<html>
+<html>
 <!-- Adding a data chart using Chart.js -->
 <head>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
     <style>
-        #htmltable {
-            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
+                .clearfix::after {
+                    content: "";
+                    clear: both;
+                    display: table;
+                  }
+                                  
+                #htmltable {
+                    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+                    border-collapse: collapse;
+                    width: 100%;
+                }
 
-            #htmltable td, #htmltable th {
-                border: 1px solid #ddd;
-                padding: 8px;
-            }
+                    #htmltable td, #htmltable th {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                    }
 
-            #htmltable tr:nth-child(even) {
-                background-color: #f2f2f2;
-            }
+                    #htmltable tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
 
-            #htmltable tr:hover {
-                background-color: #ddd;
-            }
+                    #htmltable tr:hover {
+                        background-color: #ddd;
+                    }
 
-            #htmltable th {
-                padding-top: 12px;
-                padding-bottom: 12px;
-                text-align: left;
-                background-color: #4CAF50;
-                color: white;
-            }
+                    #htmltable th {
+                        padding-top: 12px;
+                        padding-bottom: 12px;
+                        text-align: left;
+                        background-color: #4CAF50;
+                        color: white;
+                    }
 
-        tbody {
-            box-sizing: border-box;
-            display: block;
-            overflow: auto;
-            max-height: 30vh;
-            height: 30%;
-            overflow-y: auto;
-            width: 100%;
-        }
-        /*#htmldiv{
+                tbody {
+                    box-sizing: border-box;
+                    display: block;
+                    overflow: auto;
+                    max-height: 30vh;
+                    height: 30%;
+                    overflow-y: auto;
+                    width: 100%;
+                }
+                /*#htmldiv{
             overflow: auto;
           max-height: 40vh;
 
         }
         */
-        #line-chart {
-            max-width =0.50vw;
-            max-height =0.40vh;
+        #line-chart{
+          max-width=40vw;
+          max-height=40vh;
+          width=30vw;
+          height=30vh;
+          margin:10; padding:10;
+          box-sizing: border-box;
+          
+
         }
+        * { margin:0; padding:0; } /* to remove the top and left whitespace */
+        
 
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        /* to remove the top and left whitespace */
+        html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
 
-        html, body {
-            width: 100%;
-            height: 100%;
-        }
-        /* just to be sure these are full screen*/
+div {
+  resize: both;
+}
+.flexcontainer{
+  display:"flex";
+  flex-direction: column;
 
-
+}
+.parent {
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 */
+  position: relative;
+}
+.child {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
     </style>
 </head>
 <body onload="javascript:init()">
     <!-- Adding a slider for controlling data rate -->
     <hr />
-    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
-        <canvas id="line-chart"></canvas>
+    <div class="flexcontainer">
+    <div class="chart-container clearfix" style="position: relative; height:40vh; width:80vw" >
+        <canvas id="line-chart" style="width=100vw height=40vh" ></canvas>
     </div>
+    <div class='clearfix'>
     <div id="svgdiv">
         <svg id="svggraph">
 
@@ -79,100 +102,96 @@
 
     <div id="settings">
         <div id="inasettings">
-            <select name="INA219" id="range">
-                <option value="0">16V</option>
-                <option value="1">32V </option>
-            </select>
+                <select name="INA219" id="range">
+                    <option value="0">16V</option>
+                    <option value="1">32V </option>
+                </select>
 
-            <select name="INA219" id="gain">
-                <option value="0">40MV</option>
-                <option value="1">80MV </option>
-                <option value="2">160MV</option>
-                <option value="3">320MV </option>
-            </select>
+                <select name="INA219" id="gain">
+                    <option value="0">40MV</option>
+                    <option value="1">80MV </option>
+                    <option value="2">160MV</option>
+                    <option value="3">320MV </option>
+                </select>
 
-            <select name="INA219" id="adc">
-                <option value="0">9 Bit</option>
-                <option value="1">10 Bit </option>
-                <option value="2">11 Bit</option>
-                <option value="3">12 Bit </option>
-            </select>
-            <select name="INA219" id="samples">
-                <option value="9">2 Sample </option>
-                <option value="10">4 Sample</option>
-                <option value="11">8 Sample </option>
-                <option value="12">16 Sample</option>
-                <option value="13">32 Sample </option>
-                <option value="14">64 Sample </option>
-                <option value="15">128 Sample </option>
-            </select>
+                <select name="INA219" id="adc">
+                    <option value="0">9 Bit</option>
+                    <option value="1">10 Bit </option>
+                    <option value="2">11 Bit</option>
+                    <option value="3">12 Bit </option>
+                </select>
+                <select name="INA219" id="samples">
+                    <option value="9">2 Sample </option>
+                    <option value="10">4 Sample</option>
+                    <option value="11">8 Sample </option>
+                    <option value="12">16 Sample</option>
+                    <option value="13">32 Sample </option>
+                    <option value="14">64 Sample </option>
+                    <option value="15">128 Sample </option>
+                </select>
 
-            <select name="INA219" id="pga">
-                <option value="0">40MV</option>
-                <option value="1">80MV </option>
-                <option value="2">160MV</option>
-                <option value="3">320MV </option>
-            </select>
-            <input type="button" value="Set INA219" onclick="sendinasettings()">
-            <select name="INA219" id="typebinary">
-                <option value="0">Binary</option>
-                <option value="1">Text </option>
-                <option value="2">Object</option>
-                <option value="3">String </option>
-                <option value="4">Stringify binary</option>
-                <option value="5">Stringify </option>
-
-            </select>
-
-
+                <select name="INA219" id="pga">
+                    <option value="0">40MV</option>
+                    <option value="1">80MV </option>
+                    <option value="2">160MV</option>
+                    <option value="3">320MV </option>
+                </select>
+                <input type="button" value="Set INA219" onclick="sendinasettings()">
+                <select name="INA219" id="typebinary">
+                    <option value="0">Binary</option>
+                    <option value="1">Text </option>
+                    <option value="2">Object</option>
+                    <option value="3">String </option>
+                    <option value="4">Stringify binary</option>
+                    <option value="5">Stringify </option>
+                    
+                </select>
+ 
+                
 
         </div>
         <div id="shuntsettings">
-            <table>
-                <tr>
-                    <td>Resistance:<input type="text" value="0.0022050653" id="shuntresistance"> Ohms</td>
-                    <td>Max Shunt V:<input type="text" value="0.04" id="maxshuntv"> V</td>
-                    <td>Max Bus V:<input type="text" value="16" id="maxbusv"> V</td>
-                    <td>Max Current:<input type="text" value="20" id="maxbusi"> A</td>
-                </tr>
-            </table>
+          <table><tr>
+          <td>Resistance:<input type="text" value="0.0022050653" id="shuntresistance"> Ohms</td>
+          <td>Max Shunt V:<input type="text" value="0.04" id="maxshuntv"> V</td>
+          <td>Max Bus V:<input type="text" value="16" id="maxbusv"> V</td>
+          <td>Max Current:<input type="text" value="20" id="maxbusi"> A</td>
+          </tr>
+          </table>
 
         </div>
         <div id="datasettings">
-            <table>
-                <tr>
-                    <td><input type="range" min="1" max="15000" value="500" id="dataRateSlider" oninput="setDataRate()" /> </td>
-                    <td><input type="text" value="500" id="dataratems" /> ms</td>
-                    <td><input type=button value="Data Rate" onclick="sendDataRate()" /></td>
-                </tr>
-            </table>
+          <table><tr>
+          <td><input type="range" min="1" max="15000" value="500" id="dataRateSlider" oninput="setDataRate()" /> </td>
+          <td><input type="text" value="500" id="dataratems" /> ms</td>
+          <td><input type=button value="Data Rate" onclick="sendDataRate()" /></td>
+          </tr></table>
         </div>
 
 
     </div>
-
-    <div id="graphsettings">
-        <table>
-            <tr>
-                <td><textarea id="status">Status</textarea></td>
-                <td><input type="range" min="1" max="15000" value="500" id="range_maxdatapoints" oninput="document.getElementById('maxdatapoints').value=document.getElementById('range_maxdatapoints').value;" /></td>
-                <td><input type="text" value="20" id="maxdatapoints" /> ms</td>
-                <td><input type=button value="Max Data Points" onclick="maxDataPoints=document.getElementById('maxdatapoints').value;" /></td>
-            </tr>
-        </table>
-    </div>
+    
+        <div id="graphsettings">
+          <table><tr>
+          <td><textarea id="status">Status</textarea></td>
+          <td><input type="range" min="1" max="15000" value="500" id="range_maxdatapoints" oninput="document.getElementById('maxdatapoints').value=document.getElementById('range_maxdatapoints').value;" /></td> 
+          <td><input type="text" value="20" id="maxdatapoints" /> ms</td>
+          <td><input type=button value="Max Data Points" onclick="maxDataPoints=document.getElementById('maxdatapoints').value;" /></td>
+          </tr></table>
+        </div>
 
     <div id="htmldiv">
         <table id="htmltable">
             <caption>Values</caption>
         </table>
     </div>
-
+</div>
+</div>
     <!-- Adding a websocket to the client (webpage) -->
     <script>
-        var webSocket, dataPlot; msg = "";
+        webSocket="";var dataPlot; msg = "";
         var initial = 0;
-        var maxDataPoints = 20; var eventdata;
+        var maxDataPoints = 20;var eventdata;
         var blob, jsonTXT = { "Vshunt": 0, "I": 0, "Vbus": 0, "P": 0 };
         function removeData() {
             dataPlot.data.labels.shift();
@@ -186,7 +205,7 @@
         }
         function init() {
             webSocket = new WebSocket('ws://' + window.location.hostname + ':80/ws');
-            //            webSocket.binaryType = 'arraybuffer';
+//            webSocket.binaryType = 'arraybuffer';
 
             dataPlot = new Chart(document.getElementById("line-chart"), {
                 type: 'line',
@@ -198,7 +217,11 @@
                         borderColor: "#3e95cd",
                         fill: false
                     }]
-                }
+                },
+            options : {
+            responsive: true,
+            maintainAspectRatio : false
+        }
             });
             webSocket.onmessage = function (event) {
                 //      console.log(event.data);
@@ -220,16 +243,16 @@
                     };
                     if (blob instanceof Blob)
                         fileReader.readAsText(event.data);
-                    else if (blob instanceof ArrayBuffer) {
+                    else if(blob instanceof ArrayBuffer){
                         console.log(event.data);
-                        eventdata = event.data;
+                        eventdata=event.data;
                         jsonTXT = JSON.stringify(event.data);
                         console.log(jsonTXT);
                     }
-                    else {
-                        console.log("something else");
-                        eventdata = event.data;
-                        document.getElementById("status").value = eventdata + "\n" + document.getElementById("status").value;
+                    else{
+                      console.log("something else");
+                      eventdata=event.data;
+                      document.getElementById("status").value=eventdata+"\n"+document.getElementById("status").value;
                     }
                     var today = new Date();
                     var t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
@@ -265,21 +288,36 @@
                         //                        row1.innerHTML = "<td>" + jsonTXT.I + "</td><td>" + jsonTXT.Vbus + "</td><td>" + jsonTXT.P + "</td>"
                     }
                     initial++;
-                    if (table1.rows.length > maxDataPoints)
-                        table1.deleteRow(-1);
+                    while(table1.rows.length>maxDataPoints)
+                      table1.deleteRow(-1);
 
 
                 }
 
             }
+
+
+              webSocket.onclose = function(e) {
+                console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                setTimeout(function() {
+                  delete webSocket;
+                  webSocket = new WebSocket('ws://' + window.location.hostname + ':80/ws');
+                  console.log(`Opening ws://' + ${window.location.hostname} + ':80/ws`)
+                }, 1000);
+              };
+            
+              webSocket.onerror = function(err) {
+                console.error('Socket encountered error: ', err.message, 'Closing socket');
+                webSocket.close();
+              };
         }
         function setDataRate() {
             dataRate = document.getElementById("dataRateSlider").value;
-            document.getElementById("dataratems").value = dataRate;
+            document.getElementById("dataratems").value=dataRate;
         }
         function sendDataRate() {
-            dataRate = document.getElementById("dataratems").value;
-            dataRateCMD = '{"type":"command","name":"dataratesettings","dataratedelayms":' + dataRate + "}"
+            dataRate=document.getElementById("dataratems").value;
+            dataRateCMD='{"type":"command","name":"dataratesettings","dataratedelayms":'+dataRate+"}"
             console.log(`Sending Datarate Command:${dataRateCMD}`);
             webSocket.send(dataRateCMD);
         }
@@ -294,35 +332,35 @@
             jsonCMD += ',"pga":';
             jsonCMD += document.getElementById("pga").value;
             jsonCMD += ',"shuntresistance":'
-            jsonCMD += document.getElementById("shuntresistance").value * 10000;
+            jsonCMD += document.getElementById("shuntresistance").value*10000;
             jsonCMD += ',"maxshuntv":'
             jsonCMD += document.getElementById("maxshuntv").value;
             jsonCMD += ',"maxbusv":'
             jsonCMD += document.getElementById("maxbusv").value;
             jsonCMD += ',"maxbusi":'
             jsonCMD += document.getElementById("maxbusi").value;
-
+            
             jsonCMD += '}';
             console.log(`command=${jsonCMD}`)
             webSocket.send(jsonCMD);
-            sendCMD = jsonCMD;
+            sendCMD=jsonCMD;
             console.log(`command=${jsonCMD}, sendCMD=${sendCMD}`)
 
-            switch (document.getElementById("typebinary").value) {
+            switch(document.getElementById("typebinary").value){
 
-                case 0: webSocket.send(sendCMD, { binary: true }); console.log(`case 0: websocket data ${sendCMD}`); break;
-                case 1: webSocket.send(sendCMD, { binary: false }); console.log(`case 1: websocket data ${sendCMD}`); break;
-                case 2: webSocket.send(jsonCMD, { binary: true }); console.log(`case 2: websocket data ${jsonCMD}`); break;
-                case 3: webSocket.send(jsonCMD, { binary: false }); console.log(`case 3: websocket data${jsonCMD}`); break;
-                case 4: webSocket.send(jsonCMD, { binary: true }); console.log(`case 4: websocket data ${jsonCMD}`); break;
-                case 5: webSocket.send(JSON.stringify(jsonCMD)); console.log(`case 5: websocket data ${JSON.stringify(jsonCMD)}`); break;
+              case 0:            webSocket.send(sendCMD, { binary: true });console.log(`case 0: websocket data ${sendCMD}`); break;
+              case 1:            webSocket.send(sendCMD, { binary: false });console.log(`case 1: websocket data ${sendCMD}`); break;
+              case 2:            webSocket.send(jsonCMD, { binary: true });console.log(`case 2: websocket data ${jsonCMD}`); break;
+              case 3:            webSocket.send(jsonCMD, { binary: false }); console.log(`case 3: websocket data${jsonCMD}`);break;
+              case 4:            webSocket.send(jsonCMD, { binary: true }); console.log(`case 4: websocket data ${jsonCMD}`);break;
+              case 5:            webSocket.send(JSON.stringify(jsonCMD) ); console.log(`case 5: websocket data ${JSON.stringify(jsonCMD)}`);break;
 
-                default:
-                    console.log(`default: websocket data ${jsonCMD}`);
-                    webSocket.send(jsonCMD);
+              default:
+              console.log(`default: websocket data ${jsonCMD}`);
+            webSocket.send(jsonCMD);
 
             }
-            console.log(`Websocket send:${document.getElementById("typebinary").value}`)
+           console.log(`Websocket send:${document.getElementById("typebinary").value}`)
 
         }
     </script>
