@@ -45,14 +45,31 @@
 
         }
         */
+        #line-chart {
+            max-width =0.50vw;
+            max-height =0.40vh;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        /* to remove the top and left whitespace */
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        /* just to be sure these are full screen*/
+
 
     </style>
 </head>
 <body onload="javascript:init()">
     <!-- Adding a slider for controlling data rate -->
     <hr />
-    <div>
-        <canvas id="line-chart" width=60vw height=40vw></canvas>
+    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
+        <canvas id="line-chart"></canvas>
     </div>
     <div id="svgdiv">
         <svg id="svggraph">
@@ -111,21 +128,40 @@
 
         </div>
         <div id="shuntsettings">
-            Resistance:<input type="text" value="0.0022050653" id="shuntresistance"> Ohms
-            Max Shunt V:<input type="text" value="0.04" id="maxshuntv"> V
-            Max Bus V:<input type="text" value="16" id="maxbusv"> V
-            Max Current:<input type="text" value="20" id="maxbusi"> A
-
+            <table>
+                <tr>
+                    <td>Resistance:<input type="text" value="0.0022050653" id="shuntresistance"> Ohms</td>
+                    <td>Max Shunt V:<input type="text" value="0.04" id="maxshuntv"> V</td>
+                    <td>Max Bus V:<input type="text" value="16" id="maxbusv"> V</td>
+                    <td>Max Current:<input type="text" value="20" id="maxbusi"> A</td>
+                </tr>
+            </table>
 
         </div>
         <div id="datasettings">
-            <input type="range" min="1" max="15000" value="500" id="dataRateSlider" oninput="setDataRate()" />
-            <input type="text" value="500" id="dataratems" /> ms
-            <input type=button value="Data Rate" onclick="sendDataRate()" />
+            <table>
+                <tr>
+                    <td><input type="range" min="1" max="15000" value="500" id="dataRateSlider" oninput="setDataRate()" /> </td>
+                    <td><input type="text" value="500" id="dataratems" /> ms</td>
+                    <td><input type=button value="Data Rate" onclick="sendDataRate()" /></td>
+                </tr>
+            </table>
         </div>
 
+
     </div>
-    <textarea id="status">Status</textarea>
+
+    <div id="graphsettings">
+        <table>
+            <tr>
+                <td><textarea id="status">Status</textarea></td>
+                <td><input type="range" min="1" max="15000" value="500" id="range_maxdatapoints" oninput="document.getElementById('maxdatapoints').value=document.getElementById('range_maxdatapoints').value;" /></td>
+                <td><input type="text" value="20" id="maxdatapoints" /> ms</td>
+                <td><input type=button value="Max Data Points" onclick="maxDataPoints=document.getElementById('maxdatapoints').value;" /></td>
+            </tr>
+        </table>
+    </div>
+
     <div id="htmldiv">
         <table id="htmltable">
             <caption>Values</caption>
@@ -229,6 +265,8 @@
                         //                        row1.innerHTML = "<td>" + jsonTXT.I + "</td><td>" + jsonTXT.Vbus + "</td><td>" + jsonTXT.P + "</td>"
                     }
                     initial++;
+                    if (table1.rows.length > maxDataPoints)
+                        table1.deleteRow(-1);
 
 
                 }
