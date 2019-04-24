@@ -56,20 +56,44 @@
           max-height=40vh;
           width=30vw;
           height=30vh;
+          margin:10; padding:10;
+          box-sizing: border-box;
+          
+
         }
         * { margin:0; padding:0; } /* to remove the top and left whitespace */
+        
 
         html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
 
+div {
+  resize: both;
+}
+.flexcontainer{
+  display:"flex";
+  flex-direction: column;
 
+}
+.parent {
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 */
+  position: relative;
+}
+.child {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
     </style>
 </head>
 <body onload="javascript:init()">
     <!-- Adding a slider for controlling data rate -->
     <hr />
-    <div class="chart-container clearfix" style="position: relative; height:70vh; width:80vw" >
-        <canvas id="line-chart" height=50% width=100% ></canvas>
+    <div class="flexcontainer">
+    <div class="chart-container clearfix" style="position: relative; height:40vh; width:80vw" >
+        <canvas id="line-chart" style="width=100vw height=40vh" ></canvas>
     </div>
+    <div class='clearfix'>
     <div id="svgdiv">
         <svg id="svggraph">
 
@@ -161,10 +185,11 @@
             <caption>Values</caption>
         </table>
     </div>
-
+</div>
+</div>
     <!-- Adding a websocket to the client (webpage) -->
     <script>
-        var webSocket, dataPlot; msg = "";
+        webSocket="";var dataPlot; msg = "";
         var initial = 0;
         var maxDataPoints = 20;var eventdata;
         var blob, jsonTXT = { "Vshunt": 0, "I": 0, "Vbus": 0, "P": 0 };
@@ -192,7 +217,11 @@
                         borderColor: "#3e95cd",
                         fill: false
                     }]
-                }
+                },
+            options : {
+            responsive: true,
+            maintainAspectRatio : false
+        }
             });
             webSocket.onmessage = function (event) {
                 //      console.log(event.data);
@@ -271,7 +300,9 @@
               webSocket.onclose = function(e) {
                 console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
                 setTimeout(function() {
+                  delete webSocket;
                   webSocket = new WebSocket('ws://' + window.location.hostname + ':80/ws');
+                  console.log(`Opening ws://' + ${window.location.hostname} + ':80/ws`)
                 }, 1000);
               };
             
