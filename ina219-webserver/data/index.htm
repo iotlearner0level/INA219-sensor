@@ -1,131 +1,292 @@
-<!--
-  FSWebServer - Example Index Page
-  Copyright (c) 2015 Hristo Gochkov. All rights reserved.
-  This file is part of the ESP8266WebServer library for Arduino environment.
+﻿<html>
+<!-- Adding a data chart using Chart.js -->
+<head>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
+    <style>
+        #htmltable {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
--->
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <title>WebSocketTester</title>
-    <style type="text/css" media="screen">
-    body {
-      margin:0;
-      padding:0;
-      background-color: black;
-    }
+            #htmltable td, #htmltable th {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
 
-    #dbg, #input_div, #input_el {
-      font-family: monaco;
-      font-size: 12px;
-      line-height: 13px;
-      color: #AAA;
-    }
+            #htmltable tr:nth-child(even) {
+                background-color: #f2f2f2;
+            }
 
-    #dbg, #input_div {
-      margin:0;
-      padding:0;
-      padding-left:4px;
-    }
+            #htmltable tr:hover {
+                background-color: #ddd;
+            }
 
-    #input_el {
-      width:98%;
-      background-color: rgba(0,0,0,0);
-      border: 0px;
-    }
-    #input_el:focus {
-      outline: none;
-    }
+            #htmltable th {
+                padding-top: 12px;
+                padding-bottom: 12px;
+                text-align: left;
+                background-color: #4CAF50;
+                color: white;
+            }
+
+        tbody {
+            box-sizing: border-box;
+            display: block;
+            overflow: auto;
+            max-height: 30vh;
+            height: 30%;
+            overflow-y: auto;
+            width: 100%;
+        }
+        /*#htmldiv{
+            overflow: auto;
+          max-height: 40vh;
+
+        }
+        */
+
     </style>
-    <script type="text/javascript">
-    var ws = null;
-    function ge(s){ return document.getElementById(s);}
-    function ce(s){ return document.createElement(s);}
-    function stb(){ window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight); }
-    function sendBlob(str){
-      var buf = new Uint8Array(str.length);
-      for (var i = 0; i < str.length; ++i) buf[i] = str.charCodeAt(i);
-      ws.send(buf);
-    }
-    function addMessage(m){
-      var msg = ce("div");
-      msg.innerText = m;
-      ge("dbg").appendChild(msg);
-      stb();
-    }
-    function startSocket(){
-      ws = new WebSocket('ws://'+document.location.host+'/ws',['arduino']);
-      ws.binaryType = "arraybuffer";
-      ws.onopen = function(e){
-        addMessage("Connected");
-      };
-      ws.onclose = function(e){
-        addMessage("Disconnected");
-      };
-      ws.onerror = function(e){
-        console.log("ws error", e);
-        addMessage("Error");
-      };
-      ws.onmessage = function(e){
-        var msg = "";
-        if(e.data instanceof ArrayBuffer){
-          msg = "BIN:";
-          var bytes = new Uint8Array(e.data);
-          for (var i = 0; i < bytes.length; i++) {
-            msg += String.fromCharCode(bytes[i]);
-          }
-        } else {
-          msg = "TXT:"+e.data;
-        }
-        addMessage(msg);
-      };
-      ge("input_el").onkeydown = function(e){
-        stb();
-        if(e.keyCode == 13 && ge("input_el").value != ""){
-          ws.send(ge("input_el").value);
-          ge("input_el").value = "";
-        }
-      }
-    }
-    function startEvents(){
-      var es = new EventSource('/events');
-      es.onopen = function(e) {
-        addMessage("Events Opened");
-      };
-      es.onerror = function(e) {
-        if (e.target.readyState != EventSource.OPEN) {
-          addMessage("Events Closed");
-        }
-      };
-      es.onmessage = function(e) {
-        addMessage("Event: " + e.data);
-      };
-      es.addEventListener('ota', function(e) {
-        addMessage("Event[ota]: " + e.data);
-      }, false);
-    }
-    function onBodyLoad(){
-      startSocket();
-      startEvents();
-    }
-    </script>
-  </head>
-  <body id="body" onload="onBodyLoad()">
-    <pre id="dbg"></pre>
-    <div id="input_div">
-      $<input type="text" value="" id="input_el">
+</head>
+<body onload="javascript:init()">
+    <!-- Adding a slider for controlling data rate -->
+    <hr />
+    <div>
+        <canvas id="line-chart" width=60vw height=40vw></canvas>
     </div>
-  </body>
+    <div id="svgdiv">
+        <svg id="svggraph">
+
+        </svg>
+    </div>
+
+    <div id="settings">
+        <div id="inasettings">
+            <select name="INA219" id="range">
+                <option value="0">16V</option>
+                <option value="1">32V </option>
+            </select>
+
+            <select name="INA219" id="gain">
+                <option value="0">40MV</option>
+                <option value="1">80MV </option>
+                <option value="2">160MV</option>
+                <option value="3">320MV </option>
+            </select>
+
+            <select name="INA219" id="adc">
+                <option value="0">9 Bit</option>
+                <option value="1">10 Bit </option>
+                <option value="2">11 Bit</option>
+                <option value="3">12 Bit </option>
+            </select>
+            <select name="INA219" id="samples">
+                <option value="9">2 Sample </option>
+                <option value="10">4 Sample</option>
+                <option value="11">8 Sample </option>
+                <option value="12">16 Sample</option>
+                <option value="13">32 Sample </option>
+                <option value="14">64 Sample </option>
+                <option value="15">128 Sample </option>
+            </select>
+
+            <select name="INA219" id="pga">
+                <option value="0">40MV</option>
+                <option value="1">80MV </option>
+                <option value="2">160MV</option>
+                <option value="3">320MV </option>
+            </select>
+            <input type="button" value="Set INA219" onclick="sendinasettings()">
+            <select name="INA219" id="typebinary">
+                <option value="0">Binary</option>
+                <option value="1">Text </option>
+                <option value="2">Object</option>
+                <option value="3">String </option>
+                <option value="4">Stringify binary</option>
+                <option value="5">Stringify </option>
+
+            </select>
+
+
+
+        </div>
+        <div id="shuntsettings">
+            Resistance:<input type="text" value="0.0022050653" id="shuntresistance"> Ohms
+            Max Shunt V:<input type="text" value="0.04" id="maxshuntv"> V
+            Max Bus V:<input type="text" value="16" id="maxbusv"> V
+            Max Current:<input type="text" value="20" id="maxbusi"> A
+
+
+        </div>
+        <div id="datasettings">
+            <input type="range" min="1" max="15000" value="500" id="dataRateSlider" oninput="setDataRate()" />
+            <input type="text" value="500" id="dataratems" /> ms
+            <input type=button value="Data Rate" onclick="sendDataRate()" />
+        </div>
+
+    </div>
+    <textarea id="status">Status</textarea>
+    <div id="htmldiv">
+        <table id="htmltable">
+            <caption>Values</caption>
+        </table>
+    </div>
+
+    <!-- Adding a websocket to the client (webpage) -->
+    <script>
+        var webSocket, dataPlot; msg = "";
+        var initial = 0;
+        var maxDataPoints = 20; var eventdata;
+        var blob, jsonTXT = { "Vshunt": 0, "I": 0, "Vbus": 0, "P": 0 };
+        function removeData() {
+            dataPlot.data.labels.shift();
+            dataPlot.data.datasets[0].data.shift();
+        }
+        function addData(label, data) {
+            if (dataPlot.data.labels.length > maxDataPoints) removeData();
+            dataPlot.data.labels.push(label);
+            dataPlot.data.datasets[0].data.push(data);
+            dataPlot.update();
+        }
+        function init() {
+            webSocket = new WebSocket('ws://' + window.location.hostname + ':80/ws');
+            //            webSocket.binaryType = 'arraybuffer';
+
+            dataPlot = new Chart(document.getElementById("line-chart"), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        label: "Current (A)",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }]
+                }
+            });
+            webSocket.onmessage = function (event) {
+                //      console.log(event.data);
+                if (event.data instanceof ArrayBuffer) {
+                    msg = "BIN:";
+                    var bytes = new Uint8Array(event.data);
+                    for (var i = 0; i < bytes.length; i++) {
+                        msg += String.fromCharCode(bytes[i]);
+                    }
+                } else {
+                    msg = "TXT:" + event.data;
+                    blob = event.data;
+                    var arrayBuffer;
+                    var fileReader = new FileReader();
+                    fileReader.onload = function (event) {
+                        //              arrayBuffer = event.target.result;
+                        jsonTXT = JSON.parse(event.target.result);
+                        console.log(event.target.result)
+                    };
+                    if (blob instanceof Blob)
+                        fileReader.readAsText(event.data);
+                    else if (blob instanceof ArrayBuffer) {
+                        console.log(event.data);
+                        eventdata = event.data;
+                        jsonTXT = JSON.stringify(event.data);
+                        console.log(jsonTXT);
+                    }
+                    else {
+                        console.log("something else");
+                        eventdata = event.data;
+                        document.getElementById("status").value = eventdata + "\n" + document.getElementById("status").value;
+                    }
+                    var today = new Date();
+                    var t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    addData(t, jsonTXT.I);
+                    table1 = document.getElementById("htmltable");
+                    if (initial == 0) {
+                        row1 = table1.insertRow(); var tablemsg = "<th>S.No.</th>";
+                        for (i in jsonTXT) {
+                            tablemsg += "<th>";
+
+
+                            tablemsg += i + "</th>";
+
+                        }
+                        row1.innerHTML = tablemsg;
+
+
+                    }
+                    else {
+
+                        tablemsg = ""; tablemsg = initial;
+                        for (i in Object.values(jsonTXT)) {
+                            tablemsg += "<td>";
+
+
+                            tablemsg += Object.values(jsonTXT)[i] + "</td>";
+
+                        }
+
+
+                        row1 = table1.insertRow(1);
+                        row1.innerHTML = tablemsg;
+                        //                        row1.innerHTML = "<td>" + jsonTXT.I + "</td><td>" + jsonTXT.Vbus + "</td><td>" + jsonTXT.P + "</td>"
+                    }
+                    initial++;
+
+
+                }
+
+            }
+        }
+        function setDataRate() {
+            dataRate = document.getElementById("dataRateSlider").value;
+            document.getElementById("dataratems").value = dataRate;
+        }
+        function sendDataRate() {
+            dataRate = document.getElementById("dataratems").value;
+            dataRateCMD = '{"type":"command","name":"dataratesettings","dataratedelayms":' + dataRate + "}"
+            console.log(`Sending Datarate Command:${dataRateCMD}`);
+            webSocket.send(dataRateCMD);
+        }
+
+        function sendinasettings() {
+            jsonCMD = '{"type":"command","name":"inasettings","range":';
+            jsonCMD += document.getElementById("range").value;
+            jsonCMD += ',"gain":';
+            jsonCMD += document.getElementById("gain").value;
+            jsonCMD += ',"samples":';
+            jsonCMD += document.getElementById("samples").value;
+            jsonCMD += ',"pga":';
+            jsonCMD += document.getElementById("pga").value;
+            jsonCMD += ',"shuntresistance":'
+            jsonCMD += document.getElementById("shuntresistance").value * 10000;
+            jsonCMD += ',"maxshuntv":'
+            jsonCMD += document.getElementById("maxshuntv").value;
+            jsonCMD += ',"maxbusv":'
+            jsonCMD += document.getElementById("maxbusv").value;
+            jsonCMD += ',"maxbusi":'
+            jsonCMD += document.getElementById("maxbusi").value;
+
+            jsonCMD += '}';
+            console.log(`command=${jsonCMD}`)
+            webSocket.send(jsonCMD);
+            sendCMD = jsonCMD;
+            console.log(`command=${jsonCMD}, sendCMD=${sendCMD}`)
+
+            switch (document.getElementById("typebinary").value) {
+
+                case 0: webSocket.send(sendCMD, { binary: true }); console.log(`case 0: websocket data ${sendCMD}`); break;
+                case 1: webSocket.send(sendCMD, { binary: false }); console.log(`case 1: websocket data ${sendCMD}`); break;
+                case 2: webSocket.send(jsonCMD, { binary: true }); console.log(`case 2: websocket data ${jsonCMD}`); break;
+                case 3: webSocket.send(jsonCMD, { binary: false }); console.log(`case 3: websocket data${jsonCMD}`); break;
+                case 4: webSocket.send(jsonCMD, { binary: true }); console.log(`case 4: websocket data ${jsonCMD}`); break;
+                case 5: webSocket.send(JSON.stringify(jsonCMD)); console.log(`case 5: websocket data ${JSON.stringify(jsonCMD)}`); break;
+
+                default:
+                    console.log(`default: websocket data ${jsonCMD}`);
+                    webSocket.send(jsonCMD);
+
+            }
+            console.log(`Websocket send:${document.getElementById("typebinary").value}`)
+
+        }
+    </script>
+</body>
 </html>
